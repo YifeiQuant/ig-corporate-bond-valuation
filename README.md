@@ -83,9 +83,8 @@ Bonds are flagged when:
 
 ## Repository structure
 
-\`\`\`
+```text
 ig_evaluator/
-│
 ├─ data/
 │  ├─ raw/
 │  │  ├─ treasury_curve.csv
@@ -116,7 +115,7 @@ ig_evaluator/
 │
 ├─ requirements.txt
 └─ README.md
-\`\`\`
+```
 
 ## Example output
 | Bond | Obs Px | Model Px | Obs Spread | Fair Spread | Residual (bp) | Flag |
