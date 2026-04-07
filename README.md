@@ -25,13 +25,22 @@ The parts that interested me most were:
 
 This also felt like a good way to learn more fixed-income workflow while keeping the implementation transparent enough that I can follow every step.
 
+## Current Dataset
+The repo is currently set up around a recent April 6, 2026 evaluation date.
+
+The raw inputs are:
+- 2026 year-to-date Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv)
+- an 8-bond USD investment-grade sample in [bond_universe.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\bond_universe.csv)
+
+The corporate bond universe is a curated subset of recent large-cap issuers using recent public holdings data and vendor prices. Ratings in the sample are normalized issuer-level buckets used for transparent comparable-bond scoring.
+
 ## What The Project Does
 
 ### 1. Treasury curve construction
 The project loads Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv), converts standard tenors into year fractions, and bootstraps discount factors and zero rates.
 
 Output:
-- [zero_curve_1991-03-14.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\processed\zero_curve_1991-03-14.csv)
+- [zero_curve_2026-04-06.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\processed\zero_curve_2026-04-06.csv)
 
 ### 2. Bond analytics
 For each bond in [bond_universe.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\bond_universe.csv), the pipeline computes:
@@ -136,12 +145,12 @@ Run the pipeline in this order:
 ```
 
 ## Interpreting The Current Results
-The current bond universe is a small synthetic sample, so the point here is the workflow more than the exact market levels.
+The current bond universe uses recent public reference data, but it is still a deliberately small and simplified sample.
 
 That means:
-- the process is realistic even if the inputs are simplified
-- flagged bonds should be read as examples of exception review
-- large or negative residuals are not a bug by themselves; in this setup they mostly reflect synthetic data
+- the process is more market-linked than the original historical toy example
+- flagged bonds should still be read as examples of exception review rather than direct trade recommendations
+- large or negative residuals are not a bug by themselves; in this setup they mostly reflect the small universe, vendor prices, and simplified comp logic
 
 ## Workflow Summary
 The workflow is:
@@ -156,15 +165,16 @@ The workflow is:
 ## Limitations
 This version is still pretty simplified:
 - one evaluation date
-- small bond universe
-- synthetic bond sample
+- small curated bond universe
+- vendor-priced holdings data rather than direct trade-execution data
+- normalized issuer-level ratings rather than a full security-master feed
 - no issuer curve fitting
 - no liquidity score or trade-timeliness model
 - no OAS or optionality handling
 
 ## Next Extensions
 If I keep extending this, the next things I would want to add are:
-- larger issuer universe and more realistic bond reference data
+- larger issuer universe and direct TRACE or vendor trade data inputs
 - issuer spread curve fitting instead of weighted-average comp spreads
 - day-over-day attribution of Treasury move versus spread move
 - trade evidence staleness and liquidity-confidence scoring

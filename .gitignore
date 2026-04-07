@@ -201,6 +201,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local data staging
+data/raw/_staging/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
