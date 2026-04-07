@@ -1,9 +1,9 @@
 # Evaluated Pricing Pipeline for USD IG Corporate Bonds
 
 ## Overview
-This project builds a compact evaluated-pricing workflow for USD investment-grade corporate bonds.
+This project is my attempt to build a small evaluated-pricing workflow for USD investment-grade corporate bonds.
 
-Instead of pricing one bond in isolation, the pipeline:
+Instead of looking at one bond in isolation, the pipeline:
 - bootstraps a Treasury zero curve from par yields
 - computes bond-level analytics for a small corporate universe
 - scores comparable bonds using transparent rule-based logic
@@ -11,18 +11,21 @@ Instead of pricing one bond in isolation, the pipeline:
 - reprices each bond off Treasury plus fair spread
 - flags exceptions for analyst review
 
-The goal is to demonstrate the kind of daily work performed in fixed-income evaluated pricing: market data normalization, valuation logic, relative-value checks, and exception-based quality control.
+What I like about this problem is that it sits in between bond math and market workflow. You need a benchmark curve, security-level analytics, a sensible way to choose comps, and then some process for deciding which names actually deserve attention.
 
-## What This Demonstrates
-This repo is designed as an interview project for roles involving:
-- fixed-income valuation workflow design
-- Python-based market data processing
-- bond analytics and spread analysis
-- comparable-bond selection and fair-value inference
-- exception review and quality control
-- clear communication of methodology and limitations
+## Why I Built This
+I wanted to understand evaluated pricing as a process rather than as a single pricing formula.
 
-## Current Workflow
+The parts that interested me most were:
+- market data normalization
+- benchmark curve construction
+- bond analytics and spread measurement
+- peer-based relative value
+- exception-based review
+
+This also felt like a good way to learn more fixed-income workflow while keeping the implementation transparent enough that I can follow every step.
+
+## What The Project Does
 
 ### 1. Treasury curve construction
 The project loads Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv), converts standard tenors into year fractions, and bootstraps discount factors and zero rates.
@@ -43,7 +46,7 @@ Output:
 - [bond_analytics.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\bond_analytics.csv)
 
 ### 3. Comparable bond selection
-Each target bond is matched against peer bonds using a transparent score based on:
+Each target bond is matched against peer bonds using a simple score based on:
 - issuer match
 - rating match
 - seniority match
@@ -64,7 +67,7 @@ Outputs:
 - [flagged_bonds.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\flagged_bonds.csv)
 
 ### 5. Review pack
-The repo also generates a presentation-friendly review pack with summary metrics, flagged bonds, and charts.
+The repo also generates a short review pack with summary metrics, flagged bonds, and charts.
 
 Outputs:
 - [review_summary.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_summary.csv)
@@ -113,7 +116,7 @@ jpm-ig-bond-valuation/
 ```
 
 ## Setup
-This repo was run locally with Conda on Windows using Anaconda installed at `C:\ProgramData\anaconda3`.
+I ran this locally with Conda on Windows using Anaconda installed at `C:\ProgramData\anaconda3`.
 
 Create the environment:
 
@@ -133,25 +136,25 @@ Run the pipeline in this order:
 ```
 
 ## Interpreting The Current Results
-The current bond universe is a small synthetic sample used to demonstrate workflow rather than production market calibration.
+The current bond universe is a small synthetic sample, so the point here is the workflow more than the exact market levels.
 
 That means:
-- the process is realistic even if the levels are not fully market-tuned
-- flagged bonds should be read as exception-workflow examples
-- negative or large residuals are useful discussion points, not evidence that the framework failed
+- the process is realistic even if the inputs are simplified
+- flagged bonds should be read as examples of exception review
+- large or negative residuals are not a bug by themselves; in this setup they mostly reflect synthetic data
 
-## Suggested Interview Walkthrough
-If you need to explain this in 3 to 5 minutes, this is a strong flow:
+## Workflow Summary
+The workflow is:
 
-1. Start with the problem: evaluated pricing is a workflow, not a single formula.
-2. Explain the Treasury curve: all bonds are discounted off a common benchmark.
-3. Explain the analytics layer: turn clean prices into bond-level spread and risk measures.
-4. Explain the comp logic: rank peer bonds with transparent rules rather than black-box scoring.
-5. Explain fair value: infer a peer-supported spread and reprice the bond.
-6. Explain QC: route only meaningful residuals or weak-support cases to analyst review.
+1. Build a Treasury benchmark curve from par yields.
+2. Compute bond-level analytics from observed prices.
+3. Select comparable bonds using transparent similarity rules.
+4. Infer a fair spread from the selected peers.
+5. Reprice each bond off Treasury plus fair spread.
+6. Flag bonds whose observed levels differ meaningfully from the model view.
 
 ## Limitations
-This version is intentionally simplified:
+This version is still pretty simplified:
 - one evaluation date
 - small bond universe
 - synthetic bond sample
@@ -160,7 +163,7 @@ This version is intentionally simplified:
 - no OAS or optionality handling
 
 ## Next Extensions
-Natural next upgrades would be:
+If I keep extending this, the next things I would want to add are:
 - larger issuer universe and more realistic bond reference data
 - issuer spread curve fitting instead of weighted-average comp spreads
 - day-over-day attribution of Treasury move versus spread move
