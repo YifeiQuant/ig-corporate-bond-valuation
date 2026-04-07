@@ -1,138 +1,168 @@
 # Evaluated Pricing Pipeline for USD IG Corporate Bonds
 
 ## Overview
-This project builds a mini evaluated-pricing workflow for USD investment-grade corporate bonds.
+This project builds a compact evaluated-pricing workflow for USD investment-grade corporate bonds.
 
-Instead of pricing a single bond in isolation, the pipeline:
-- bootstraps a Treasury zero curve from market par yields
-- computes bond analytics for a small universe of IG corporates
-- selects comparable bonds using rule-based similarity scoring
-- infers a fair spread for each target bond
-- reprices bonds off the benchmark curve plus fair spread
-- flags bonds for review when observed levels deviate from model-implied levels
+Instead of pricing one bond in isolation, the pipeline:
+- bootstraps a Treasury zero curve from par yields
+- computes bond-level analytics for a small corporate universe
+- scores comparable bonds using transparent rule-based logic
+- infers a fair spread for each target bond from peer bonds
+- reprices each bond off Treasury plus fair spread
+- flags exceptions for analyst review
 
-The goal is to mimic the logic of an evaluated-pricing workflow:
-consistent market inputs, transparent methodology, and exception-based review.
+The goal is to demonstrate the kind of daily work performed in fixed-income evaluated pricing: market data normalization, valuation logic, relative-value checks, and exception-based quality control.
 
-## Why this project
-This project is designed to demonstrate the type of work relevant to fixed income evaluated pricing:
-- market data normalization
-- curve construction
-- bond math and spread analysis
-- relative value / comp-based valuation
-- quality control and exception handling
-- reproducible Python workflow
+## What This Demonstrates
+This repo is designed as an interview project for roles involving:
+- fixed-income valuation workflow design
+- Python-based market data processing
+- bond analytics and spread analysis
+- comparable-bond selection and fair-value inference
+- exception review and quality control
+- clear communication of methodology and limitations
 
-## Project scope
-- 12–20 USD investment-grade corporate bonds
-- 3–4 issuers
-- plain-vanilla fixed-rate senior unsecured bonds
-- maturity bucket roughly 2Y–10Y
-- one evaluation date
-- optional one-day comparison for rates vs spread attribution
+## Current Workflow
 
-## Methodology
+### 1. Treasury curve construction
+The project loads Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv), converts standard tenors into year fractions, and bootstraps discount factors and zero rates.
 
-### 1. Treasury benchmark curve
-Treasury par yields are used to bootstrap a zero curve.
-This provides discount factors for valuing future bond cash flows consistently.
+Output:
+- [zero_curve_1991-03-14.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\processed\zero_curve_1991-03-14.csv)
 
 ### 2. Bond analytics
-For each bond, the pipeline computes:
+For each bond in [bond_universe.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\bond_universe.csv), the pipeline computes:
 - accrued interest
-- clean and dirty price
+- dirty price
 - yield to maturity
+- spread to Treasury curve
 - modified duration
 - convexity
-- benchmark Treasury yield
-- spread to benchmark
+
+Output:
+- [bond_analytics.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\bond_analytics.csv)
 
 ### 3. Comparable bond selection
-For each target bond, candidate comps are scored using:
+Each target bond is matched against peer bonds using a transparent score based on:
 - issuer match
-- rating bucket match
+- rating match
 - seniority match
+- sector match
+- currency match
 - maturity proximity
 - coupon proximity
-- same currency / plain-vanilla structure
+- spread proximity
 
-Top-ranked comps are used to anchor fair value.
+Output:
+- [comp_selection.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\comp_selection.csv)
 
-### 4. Fair spread inference
-A fair spread is estimated from selected comps using weighted averaging or issuer-curve interpolation when possible.
-
-### 5. Evaluated pricing
-Each bond is repriced using:
-- Treasury zero curve
-- inferred fair spread
+### 4. Evaluated pricing
+The top-ranked comps are used to infer a fair spread for each bond. Each bond is then repriced off the Treasury curve plus that fair spread.
 
 Outputs:
-- observed price
-- model price
-- observed spread
-- fair spread
-- residuals
+- [daily_eval_table.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\daily_eval_table.csv)
+- [flagged_bonds.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\flagged_bonds.csv)
 
-### 6. Quality control
-Bonds are flagged when:
-- spread residual is too large
-- price residual is too large
-- comp support is weak
-- trade evidence is stale
-- liquidity proxies are poor
+### 5. Review pack
+The repo also generates a presentation-friendly review pack with summary metrics, flagged bonds, and charts.
 
-## Repository structure
+Outputs:
+- [review_summary.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_summary.csv)
+- [review_pack_flagged.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_pack_flagged.csv)
+- [review_pack.md](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_pack.md)
+- [spread_residuals.png](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\charts\spread_residuals.png)
+- [price_residuals.png](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\charts\price_residuals.png)
 
+## Repository Structure
 ```text
-ig_evaluator/
-├─ data/
-│  ├─ raw/
-│  │  ├─ treasury_curve.csv
-│  │  ├─ bond_universe.csv
-│  │  └─ trades.csv
-│  └─ processed/
-│
-├─ notebooks/
-│  ├─ 01_curve_build.ipynb
-│  ├─ 02_bond_analytics.ipynb
-│  ├─ 03_comp_selection.ipynb
-│  ├─ 04_evaluated_pricing.ipynb
-│  └─ 05_review_pack.ipynb
-│
-├─ src/
-│  ├─ curve.py
-│  ├─ cashflows.py
-│  ├─ bond_math.py
-│  ├─ spreads.py
-│  ├─ comps.py
-│  ├─ evaluator.py
-│  └─ qc.py
-│
-├─ outputs/
-│  ├─ daily_eval_table.csv
-│  ├─ flagged_bonds.csv
-│  └─ charts/
-│
-├─ requirements.txt
-└─ README.md
+jpm-ig-bond-valuation/
+|-- data/
+|   |-- processed/
+|   `-- raw/
+|       |-- bond_universe.csv
+|       `-- treasury_curve.csv
+|-- notebooks/
+|   |-- 01_curve_build.ipynb
+|   |-- 02_bond_analytics.ipynb
+|   |-- 03_comp_selection.ipynb
+|   |-- 04_evaluated_pricing.ipynb
+|   `-- 05_review_pack.ipynb
+|-- outputs/
+|   |-- charts/
+|   |-- bond_analytics.csv
+|   |-- comp_selection.csv
+|   |-- daily_eval_table.csv
+|   |-- flagged_bonds.csv
+|   |-- review_pack.md
+|   |-- review_pack_flagged.csv
+|   `-- review_summary.csv
+|-- scripts/
+|   |-- build_zero_curve.py
+|   |-- generate_review_pack.py
+|   |-- run_bond_analytics.py
+|   `-- run_evaluated_pricing.py
+|-- src/
+|   |-- bond_math.py
+|   |-- cashflows.py
+|   |-- comps.py
+|   |-- curve.py
+|   |-- evaluator.py
+|   `-- qc.py
+|-- requirements.txt
+`-- README.md
 ```
 
-## Example output
-| Bond | Obs Px | Model Px | Obs Spread | Fair Spread | Residual (bp) | Flag |
-|------|-------:|---------:|-----------:|------------:|--------------:|------|
-| AAPL 2031 | 101.22 | 101.35 | 64 | 62 | 2 | Normal |
-| MSFT 2031 | 100.88 | 101.10 | 59 | 54 | 5 | Review |
-| JNJ 2030  | 99.95  | 100.40 | 71 | 60 | 11 | High Review |
+## Setup
+This repo was run locally with Conda on Windows using Anaconda installed at `C:\ProgramData\anaconda3`.
 
-## Key takeaways
-- Evaluated pricing is more than a formula; it is a market-informed workflow.
-- Treasury moves and spread moves should be separated.
-- Peer selection quality matters.
-- Liquidity and stale trading evidence affect confidence in the mark.
+Create the environment:
 
-## Future extensions
-- issuer spread curve fitting
-- more robust liquidity scoring
-- day-over-day attribution
-- sector / rating spread normalization
-- OAS framework for non-plain-vanilla bonds
+```powershell
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' create -n bondval python=3.13 -y
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python -m pip install -r requirements.txt
+```
+
+## Run Order
+Run the pipeline in this order:
+
+```powershell
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python scripts\build_zero_curve.py
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python scripts\run_bond_analytics.py
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python scripts\run_evaluated_pricing.py
+& 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python scripts\generate_review_pack.py
+```
+
+## Interpreting The Current Results
+The current bond universe is a small synthetic sample used to demonstrate workflow rather than production market calibration.
+
+That means:
+- the process is realistic even if the levels are not fully market-tuned
+- flagged bonds should be read as exception-workflow examples
+- negative or large residuals are useful discussion points, not evidence that the framework failed
+
+## Suggested Interview Walkthrough
+If you need to explain this in 3 to 5 minutes, this is a strong flow:
+
+1. Start with the problem: evaluated pricing is a workflow, not a single formula.
+2. Explain the Treasury curve: all bonds are discounted off a common benchmark.
+3. Explain the analytics layer: turn clean prices into bond-level spread and risk measures.
+4. Explain the comp logic: rank peer bonds with transparent rules rather than black-box scoring.
+5. Explain fair value: infer a peer-supported spread and reprice the bond.
+6. Explain QC: route only meaningful residuals or weak-support cases to analyst review.
+
+## Limitations
+This version is intentionally simplified:
+- one evaluation date
+- small bond universe
+- synthetic bond sample
+- no issuer curve fitting
+- no liquidity score or trade-timeliness model
+- no OAS or optionality handling
+
+## Next Extensions
+Natural next upgrades would be:
+- larger issuer universe and more realistic bond reference data
+- issuer spread curve fitting instead of weighted-average comp spreads
+- day-over-day attribution of Treasury move versus spread move
+- trade evidence staleness and liquidity-confidence scoring
+- automated notebook or slide export for daily review
