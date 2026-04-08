@@ -96,9 +96,10 @@ def bootstrap_zero_curve(
         if not known_times:
             raise ValueError("No earlier discount factors are available for interpolation.")
 
-        # Production curve construction would use a richer spline or parametric fit.
-        # For this interview project, linear interpolation on log discount factors is
-        # a transparent way to infer coupon-date discounting between standard tenors.
+        # A production curve engine would usually use a richer interpolation or
+        # parametric term-structure fit. Here, log-linear interpolation on discount
+        # factors keeps the implementation transparent and stable at coupon dates
+        # that fall between the standard tenor nodes.
         if rounded_target <= known_times[0]:
             t0 = known_times[0]
             zero0 = known_dfs[t0] ** (-1.0 / t0) - 1.0
