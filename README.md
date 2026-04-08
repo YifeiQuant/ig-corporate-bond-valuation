@@ -1,4 +1,4 @@
-# Evaluated Pricing Pipeline for USD IG Corporate Bonds
+# IG Corporate Bond Valuation
 
 ## Overview
 This project is my attempt to build a small evaluated-pricing workflow for USD investment-grade corporate bonds.
@@ -87,7 +87,7 @@ Outputs:
 
 ## Repository Structure
 ```text
-jpm-ig-bond-valuation/
+ig-corporate-bond-valuation/
 |-- data/
 |   |-- processed/
 |   `-- raw/
