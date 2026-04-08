@@ -1,5 +1,11 @@
 # IG Corporate Bond Valuation
 
+Right now comp selection is just a simple rules-based score.
+
+A suggestion I got while discussing this project, and not something I had originally planned myself, was to try an unsupervised ML approach for comp selection, maybe clustering or nearest neighbors. I liked that idea because bond universes can vary a lot in size and I usually would not have labeled examples of what counts as a "good comp."
+
+Along the same lines, I would only reach for something like LightGBM if I actually had labeled comp-quality data, like trader-selected peers or some historical measure of which comps gave the best pricing support. Without that kind of label set, clustering feels like the more natural place for me to start.
+
 ## Overview
 This repo is a small pricing exercise for USD investment-grade corporate bonds.
 
@@ -155,6 +161,7 @@ This version is still simplified:
 ## Possible Next Steps
 If I keep extending it, the next additions I would look at are:
 - a larger issuer universe with richer trade data
+- trying clustering or nearest-neighbor methods for comp selection
 - issuer spread curve fitting instead of weighted-average comp spreads
 - Treasury-move versus spread-move attribution
 - trade staleness and liquidity-confidence scoring
