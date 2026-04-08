@@ -1,89 +1,79 @@
 # IG Corporate Bond Valuation
 
 ## Overview
-This project is my attempt to build a small evaluated-pricing workflow for USD investment-grade corporate bonds.
+This repo is a small pricing exercise for USD investment-grade corporate bonds.
 
-Instead of looking at one bond in isolation, the pipeline:
-- bootstraps a Treasury zero curve from par yields
-- computes bond-level analytics for a small corporate universe
-- scores comparable bonds using transparent rule-based logic
-- infers a fair spread for each target bond from peer bonds
-- reprices each bond off Treasury plus fair spread
-- flags exceptions for analyst review
+The pipeline does five things:
+- builds a Treasury zero curve from par yields
+- calculates bond analytics for a small corporate sample
+- scores peer bonds with a simple rules-based comp model
+- estimates a peer-implied fair spread for each bond
+- reprices the bonds and flags the ones that look offside
 
-What I like about this problem is that it sits in between bond math and market workflow. You need a benchmark curve, security-level analytics, a sensible way to choose comps, and then some process for deciding which names actually deserve attention.
+## Why I Built It
+I wanted one project that tied together curve construction, bond math, and relative-value checks.
 
-## Why I Built This
-I wanted to understand evaluated pricing as a process rather than as a single pricing formula.
-
-The parts that interested me most were:
-- market data normalization
-- benchmark curve construction
-- bond analytics and spread measurement
-- peer-based relative value
-- exception-based review
-
-This also felt like a good way to learn more fixed-income workflow while keeping the implementation transparent enough that I can follow every step.
+Most bond examples stop at yield or duration. Here I wanted to go one step further: start with benchmark rates, measure each bond versus Treasury, compare it with a few similar bonds, and finish with a short review list.
 
 ## Current Dataset
-The repo is currently set up around a recent April 6, 2026 evaluation date.
+The current run uses an evaluation date of April 6, 2026.
 
-The raw inputs are:
-- 2026 year-to-date Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv)
-- an 8-bond USD investment-grade sample in [bond_universe.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\bond_universe.csv)
+Raw inputs:
+- 2026 year-to-date Treasury par yields in [data/raw/treasury_curve.csv](data/raw/treasury_curve.csv)
+- an 8-bond USD investment-grade sample in [data/raw/bond_universe.csv](data/raw/bond_universe.csv)
 
-The corporate bond universe is a curated subset of recent large-cap issuers using recent public holdings data and vendor prices. Ratings in the sample are normalized issuer-level buckets used for transparent comparable-bond scoring.
+The bond sample is a curated subset of recent large-cap issuers built from public holdings data and vendor prices. Ratings are normalized issuer-level buckets so the comp logic has a consistent input set.
 
 ## What The Project Does
 
 ### 1. Treasury curve construction
-The project loads Treasury par yields from [treasury_curve.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\treasury_curve.csv), converts standard tenors into year fractions, and bootstraps discount factors and zero rates.
+The project loads Treasury par yields, converts standard tenors into year fractions, and bootstraps discount factors and zero rates.
 
 Output:
-- [zero_curve_2026-04-06.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\processed\zero_curve_2026-04-06.csv)
+- [data/processed/zero_curve_2026-04-06.csv](data/processed/zero_curve_2026-04-06.csv)
 
 ### 2. Bond analytics
-For each bond in [bond_universe.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\data\raw\bond_universe.csv), the pipeline computes:
+For each bond in [data/raw/bond_universe.csv](data/raw/bond_universe.csv), the pipeline computes:
 - accrued interest
 - dirty price
 - yield to maturity
-- spread to Treasury curve
+- spread to Treasury
 - modified duration
 - convexity
 
 Output:
-- [bond_analytics.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\bond_analytics.csv)
+- [outputs/bond_analytics.csv](outputs/bond_analytics.csv)
 
-### 3. Comparable bond selection
-Each target bond is matched against peer bonds using a simple score based on:
-- issuer match
-- rating match
-- seniority match
-- sector match
-- currency match
-- maturity proximity
-- coupon proximity
-- spread proximity
+### 3. Comparable-bond selection
+Each target bond is scored against the rest of the sample using:
+- issuer
+- rating
+- seniority
+- sector
+- currency
+- maturity gap
+- coupon gap
+- spread gap
 
 Output:
-- [comp_selection.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\comp_selection.csv)
+- [outputs/comp_selection.csv](outputs/comp_selection.csv)
 
-### 4. Evaluated pricing
-The top-ranked comps are used to infer a fair spread for each bond. Each bond is then repriced off the Treasury curve plus that fair spread.
+### 4. Fair-spread estimate and repricing
+The top-ranked comps are used to estimate a fair spread for each bond. The bond is then repriced off the Treasury zero curve plus that spread.
 
 Outputs:
-- [daily_eval_table.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\daily_eval_table.csv)
-- [flagged_bonds.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\flagged_bonds.csv)
+- [outputs/daily_eval_table.csv](outputs/daily_eval_table.csv)
+- [outputs/flagged_bonds.csv](outputs/flagged_bonds.csv)
 
 ### 5. Review pack
-The repo also generates a short review pack with summary metrics, flagged bonds, and charts.
+The repo also writes a short summary with the flagged names and residual charts.
 
 Outputs:
-- [review_summary.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_summary.csv)
-- [review_pack_flagged.csv](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_pack_flagged.csv)
-- [review_pack.md](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\review_pack.md)
-- [spread_residuals.png](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\charts\spread_residuals.png)
-- [price_residuals.png](C:\Users\Yifei\Documents\GitHub\jpm-ig-bond-valuation\outputs\charts\price_residuals.png)
+- [outputs/review_summary.csv](outputs/review_summary.csv)
+- [outputs/review_pack_flagged.csv](outputs/review_pack_flagged.csv)
+- [outputs/review_pack.md](outputs/review_pack.md)
+- [outputs/charts/spread_residuals.png](outputs/charts/spread_residuals.png)
+- [outputs/charts/price_residuals.png](outputs/charts/price_residuals.png)
 
 ## Repository Structure
 ```text
@@ -144,38 +134,28 @@ Run the pipeline in this order:
 & 'C:\ProgramData\anaconda3\Scripts\conda.exe' run -n bondval python scripts\generate_review_pack.py
 ```
 
-## Interpreting The Current Results
-The current bond universe uses recent public reference data, but it is still a deliberately small and simplified sample.
+## Reading The Current Results
+Because the bond universe is small and the prices come from public holdings data, the residuals are noisy.
 
 That means:
-- the process is more market-linked than the original historical toy example
-- flagged bonds should still be read as examples of exception review rather than direct trade recommendations
-- large or negative residuals are not a bug by themselves; in this setup they mostly reflect the small universe, vendor prices, and simplified comp logic
-
-## Workflow Summary
-The workflow is:
-
-1. Build a Treasury benchmark curve from par yields.
-2. Compute bond-level analytics from observed prices.
-3. Select comparable bonds using transparent similarity rules.
-4. Infer a fair spread from the selected peers.
-5. Reprice each bond off Treasury plus fair spread.
-6. Flag bonds whose observed levels differ meaningfully from the model view.
+- the outputs are better read as a relative-value exercise than as tradable signals
+- review flags are mainly a way to highlight outliers inside this small sample
+- large residuals are not automatically bugs; they often reflect the limited comp set
 
 ## Limitations
-This version is still pretty simplified:
+This version is still simplified:
 - one evaluation date
 - small curated bond universe
-- vendor-priced holdings data rather than direct trade-execution data
+- vendor-priced holdings data rather than recent trade data
 - normalized issuer-level ratings rather than a full security-master feed
 - no issuer curve fitting
 - no liquidity score or trade-timeliness model
 - no OAS or optionality handling
 
-## Next Extensions
-If I keep extending this, the next things I would want to add are:
-- larger issuer universe and direct TRACE or vendor trade data inputs
+## Possible Next Steps
+If I keep extending it, the next additions I would look at are:
+- a larger issuer universe with richer trade data
 - issuer spread curve fitting instead of weighted-average comp spreads
-- day-over-day attribution of Treasury move versus spread move
-- trade evidence staleness and liquidity-confidence scoring
-- automated notebook or slide export for daily review
+- Treasury-move versus spread-move attribution
+- trade staleness and liquidity-confidence scoring
+- a cleaner daily report export
